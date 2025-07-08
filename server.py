@@ -18,7 +18,7 @@ def scan_url():
         return jsonify({"error": "URL missing"}), 400
     try:
         result = subprocess.check_output(
-            ['python3', 'scanner.py', url],
+            ['python3', 'Scanner.py', url],
             stderr=subprocess.STDOUT,
             text=True
         )
