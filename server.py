@@ -14,7 +14,8 @@ def index():
 def scan_url():
     data = request.get_json()
     url = data.get("url")
-
+    if not url:
+        return jsonify({"error": "URL missing"}), 400
     try:
         result = subprocess.check_output(
             ['python3', 'scanner.py', url],
@@ -24,3 +25,5 @@ def scan_url():
         return jsonify({"output": result})
     except subprocess.CalledProcessError as e:
         return jsonify({"error": e.output}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
