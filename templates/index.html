@@ -1,0 +1,82 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>URL Vulnerability Scanner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-purple-500 to-indigo-600 min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-2xl bg-white p-6 rounded-xl shadow-lg">
+    <h1 class="text-2xl font-bold mb-4 text-center text-gray-800">URL Vulnerability Scanner</h1>
+    <p class="text-gray-600 text-center mb-6">Enter a URL to scan it for basic issues</p>
+    <div class="flex gap-2 mb-4">
+      <input id="url-input" type="text" placeholder="https://example.com"
+             class="w-full p-3 border border-gray-300 rounded-md" />
+      <button id="scan-btn"
+              class="bg-purple-600 text-white px-5 py-3 rounded-md hover:bg-purple-700 transition">
+        Scan
+      </button>
+    </div>
+    <div id="status" class="text-sm text-gray-500 mb-2 hidden"></div>
+    <pre id="result" class="bg-black text-white p-4 rounded-md text-sm max-h-96 overflow-auto hidden"></pre>
+    <button id="copy-btn"
+            class="bg-gray-200 mt-3 px-4 py-2 rounded hover:bg-gray-300 text-sm hidden">Copy</button>
+  </div>
+
+  <script>
+    const scanBtn = document.getElementById("scan-btn");
+    const urlInput = document.getElementById("url-input");
+    const status = document.getElementById("status");
+    const result = document.getElementById("result");
+    const copyBtn = document.getElementById("copy-btn");
+
+    scanBtn.addEventListener("click", async () => {
+      const url = urlInput.value.trim();
+      if (!url.startsWith("http")) {
+        alert("Enter a valid URL starting with http:// or https://");
+        return;
+      }
+
+      status.textContent = "Scanning...";
+      status.classList.remove("hidden");
+      result.classList.add("hidden");
+      copyBtn.classList.add("hidden");
+
+      try {
+        const res = await fetch("http://YOUR_SERVER_IP:5000/scan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          result.textContent = data.output;
+          result.classList.remove("hidden");
+          copyBtn.classList.remove("hidden");
+          status.textContent = "Scan completed!";
+        } else {
+          result.textContent = "Error:\n" + data.error;
+          result.classList.remove("hidden");
+          copyBtn.classList.remove("hidden");
+          status.textContent = "Scan failed!";
+        }
+      } catch (err) {
+        result.textContent = "Server error: " + err.message;
+        result.classList.remove("hidden");
+        status.textContent = "Connection error!";
+      }
+    });
+
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard.writeText(result.textContent).then(() => {
+        copyBtn.textContent = "Copied!";
+        setTimeout(() => (copyBtn.textContent = "Copy"), 2000);
+      });
+    });
+  </script>
+</body>
+</html>
